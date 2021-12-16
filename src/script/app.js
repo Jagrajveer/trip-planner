@@ -12,8 +12,9 @@ const DestinationFormElement = document.querySelector(".destination-form");
 const DestinationInputElement = document.querySelector(
   ".destination-form input"
 );
+const OriginListElement = document.querySelector(".origins");
 
-// using getCurrentPosition get user's coordinates and pass it to the getPlaces
+// using getCurrentPosition get user's coordinates and pass it to the getPlaces to get list of origin places
 const getOriginPlacesList = (e) => {
   e.preventDefault();
   if (OriginInputElement.value !== "") {
@@ -21,7 +22,7 @@ const getOriginPlacesList = (e) => {
       navigator.geolocation.getCurrentPosition(
         ({ coords: { latitude, longitude } }) => {
           getPlaces(latitude, longitude, OriginInputElement.value).then(
-            (data) => console.log(data)
+            (data) => renderOriginPlacesList(data)
           );
         }
       );
@@ -32,7 +33,7 @@ const getOriginPlacesList = (e) => {
   }
 };
 
-// using getCurrentPosition get user's coordinates and pass it to the getPlaces
+// using getCurrentPosition get user's coordinates and pass it to the getPlaces to get list of destination places
 const getDestinationPlacesList = (e) => {
   e.preventDefault();
   if (navigator.geolocation) {
@@ -55,6 +56,24 @@ const getPlaces = async (latitude, longitude, place) => {
   const response = await fetch(url);
   const data = await response.json();
   return data;
+};
+
+// function to display origin places list
+const renderOriginPlacesList = ({ features }) => {
+  OriginListElement.innerHTML = "";
+  console.log(features);
+  features.map((feature) => {
+    const { center, place_name } = feature;
+    OriginListElement.insertAdjacentHTML(
+      "beforeend",
+      `
+      <li data-long="${center[0]}" data-lat="${center[1]}">
+      <div class="name">${place_name.split(",")[0]}</div>
+      <div>${place_name.split(",")[1]}</div>
+    </li>
+      `
+    );
+  });
 };
 
 OriginFormElement.addEventListener("submit", getOriginPlacesList);
