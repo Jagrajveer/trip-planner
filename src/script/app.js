@@ -8,11 +8,13 @@ const map_box_base_url = "https://api.mapbox.com/geocoding/v5/mapbox.places";
 // elements
 const OriginFormElement = document.querySelector(".origin-form");
 const OriginInputElement = document.querySelector(".origin-form input");
+const OriginListElement = document.querySelector(".origins");
+
 const DestinationFormElement = document.querySelector(".destination-form");
 const DestinationInputElement = document.querySelector(
   ".destination-form input"
 );
-const OriginListElement = document.querySelector(".origins");
+const DestinationListElement = document.querySelector(".destinations");
 
 // using getCurrentPosition get user's coordinates and pass it to the getPlaces to get list of origin places
 const getOriginPlacesList = (e) => {
@@ -40,7 +42,7 @@ const getDestinationPlacesList = (e) => {
     navigator.geolocation.getCurrentPosition(
       ({ coords: { latitude, longitude } }) => {
         getPlaces(latitude, longitude, DestinationInputElement.value).then(
-          (data) => console.log(data)
+          (data) => renderDestinationPlacesList(data)
         );
       }
     );
@@ -61,10 +63,28 @@ const getPlaces = async (latitude, longitude, place) => {
 // function to display origin places list
 const renderOriginPlacesList = ({ features }) => {
   OriginListElement.innerHTML = "";
-  console.log(features);
+
   features.map((feature) => {
     const { center, place_name } = feature;
     OriginListElement.insertAdjacentHTML(
+      "beforeend",
+      `
+      <li data-long="${center[0]}" data-lat="${center[1]}">
+      <div class="name">${place_name.split(",")[0]}</div>
+      <div>${place_name.split(",")[1]}</div>
+    </li>
+      `
+    );
+  });
+};
+
+// function to display destination places list
+const renderDestinationPlacesList = ({ features }) => {
+  DestinationListElement.innerHTML = "";
+
+  features.map((feature) => {
+    const { center, place_name } = feature;
+    DestinationListElement.insertAdjacentHTML(
       "beforeend",
       `
       <li data-long="${center[0]}" data-lat="${center[1]}">
