@@ -20,6 +20,7 @@ const DestinationInputElement = document.querySelector(
 const DestinationListElement = document.querySelector(".destinations");
 
 const PlanMyTripButton = document.querySelector(".plan-trip");
+const RouteElement = document.querySelector(".my-trip");
 
 const route = {
   origin: "",
@@ -48,17 +49,19 @@ const getOriginPlacesList = (e) => {
 // using getCurrentPosition get user's coordinates and pass it to the getPlaces to get list of destination places
 const getDestinationPlacesList = (e) => {
   e.preventDefault();
-  if (navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition(
-      ({ coords: { latitude, longitude } }) => {
-        getPlaces(latitude, longitude, DestinationInputElement.value).then(
-          (data) => renderDestinationPlacesList(data)
-        );
-      }
-    );
-  } else {
-    document.getElementsByTagName("body")[0].innerHTML =
-      "Geolocation is not supported in this browser.";
+  if (OriginInputElement.value !== "") {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        ({ coords: { latitude, longitude } }) => {
+          getPlaces(latitude, longitude, DestinationInputElement.value).then(
+            (data) => renderDestinationPlacesList(data)
+          );
+        }
+      );
+    } else {
+      document.getElementsByTagName("body")[0].innerHTML =
+        "Geolocation is not supported in this browser.";
+    }
   }
 };
 
@@ -139,18 +142,44 @@ const getRouteFromOriginToDestination = async () => {
   const url = `${winnipeg_transit_base_url}?origin=geo/${route.origin.lat}, ${route.origin.long}&destination=geo/${route.destination.lat}, ${route.destination.long}&api-key=${WINNIPEG_TRANSIT_API_KEY}`;
   const response = await fetch(url);
   const data = await response.json();
-  console.log(data);
   return data;
 };
 
 const renderRoute = (data) => {
-  console.log(data);
+  const { plans } = data;
+  RouteElement.innerHTML = "";
+
+  plans[0].segments.map((segment) => {
+    let step = "";
+
+    if (segment.type === "walk") {
+      if (segment.to.stop) {
+        step = `<li><i class="fas fa-walking"></i>Walk for ${segment.times.durations.walking} minutes to ${segment.to.stop.key} - ${segment.to.stop.name}.</li>`;
+      } else if (segment.to.destination) {
+        step = `<li><i class="fas fa-walking"></i>Walk for ${segment.times.durations.walking} minutes to your destination.</li>`;
+      }
+    }
+    if (segment.type === "ride") {
+      if (segment.route.key === "BLUE") {
+        step = `<li><i class="fas fa-bus" ></i>Ride the ${segment.route.key} for ${segment.times.durations.riding} minutes.</li>`;
+      } else {
+        step = `<li><i class="fas fa-bus" ></i>Ride the ${segment.route.name} for ${segment.times.durations.riding} minutes.</li>`;
+      }
+    }
+    if (segment.type === "transfer") {
+      step = `<li><i class="fas fa-ticket-alt"></i>transfer from stop ${segment.from.stop.name} to stop ${segment.to.stop.name}.</li>`;
+    }
+
+    RouteElement.insertAdjacentHTML("beforeend", step);
+  });
 };
 
 PlanMyTripButton.addEventListener("click", () => {
-  getRouteFromOriginToDestination()
-    .then((data) => renderRoute(data))
-    .catch((error) => console.log(error));
+  if (route.origin !== "" || route.destination !== "") {
+    getRouteFromOriginToDestination()
+      .then((data) => renderRoute(data))
+      .catch((error) => console.log(error));
+  }
 });
 
 OriginFormElement.addEventListener("submit", getOriginPlacesList);
