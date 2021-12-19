@@ -76,16 +76,16 @@ OriginListElement.addEventListener("click", (e) => {
 });
 
 DestinationListElement.addEventListener("click", (e) => {
-  for (let child of OriginListElement.children) {
+  for (let child of DestinationListElement.children) {
     child.classList.remove("selected");
   }
 
   if (e.target.localName === "li") {
     e.target.classList.add("selected");
-    route.origin = e.target.dataset;
+    route.destination = e.target.dataset;
   } else if (e.target.localName === "div") {
     e.target.parentElement.classList.add("selected");
-    route.origin = e.target.parentElement.dataset;
+    route.destination = e.target.parentElement.dataset;
   }
 });
 
