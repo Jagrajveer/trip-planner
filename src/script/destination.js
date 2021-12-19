@@ -1,5 +1,4 @@
 import {
-  OriginInputElement,
   getPlaces,
   DestinationInputElement,
   DestinationListElement,
@@ -8,7 +7,7 @@ import {
 // using getCurrentPosition get user's coordinates and pass it to the getPlaces to get list of destination places
 export const getDestinationPlacesList = (e) => {
   e.preventDefault();
-  if (OriginInputElement.value !== "") {
+  if (DestinationInputElement.value !== "") {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         ({ coords: { latitude, longitude } }) => {
